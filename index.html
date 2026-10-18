@@ -33,7 +33,9 @@ button.sm{min-height:2.2rem;padding:.3rem .7rem;font-size:.85rem;font-weight:600
 .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:.7rem 1.1rem;border-radius:12px;z-index:9;max-width:90vw;text-align:center}
 .ov{position:fixed;inset:0;background:#0007;z-index:8;display:grid;place-items:center;padding:16px}.ov .card{width:100%;max-width:440px}
 .num{flex:none;width:32px;height:32px;border-radius:50%;background:var(--plum);color:#fff;display:grid;place-items:center;font-weight:800;font-size:.95rem}
-.ihead{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.ihead{display:flex;gap:10px;align-items:center;margin:-16px -16px 12px;padding:12px 16px;background:var(--ic);border-radius:16px 16px 0 0}
+.ihead .num{background:#fff;color:var(--ic)}
+.ihead input{border-color:transparent}
 .ihead .t{font-weight:800;font-size:1.2rem;flex:1}
 /* 항목마다 다른 색 제목 띠 (고객이 '지금 무엇을 고르는지' 바로 보이게) */
 .card.ic{border:3px solid var(--ic);padding-top:0;overflow:hidden}
@@ -136,7 +138,7 @@ const shrink = file => new Promise(res => { const r = new FileReader(); r.onload
   c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); res(c.toDataURL('image/jpeg', .82)); }; im.src = r.result; }; r.readAsDataURL(file); });
 const IC = ['#D9487A', '#4F63D8', '#12968A', '#E07B12', '#8A55C9', '#2B8BD8', '#C7512B', '#B5458F', '#5C7A29'], ic = i => IC[i % IC.length];
 const ranked = it => it.opts.map((o, j) => ({ o, j })).sort((a, b) => (a.o.rank || 9) - (b.o.rank || 9));
-const label = o => o ? o.name || (o.rank ? `대표님 ${o.rank}순위` : '선택지') : '';
+const label = o => o ? o.name || (o.rank ? `${o.rank}순위` : '선택지') : '';
 const pickOf = (it, r) => it.opts.find(o => o.id === (r.picks || {})[it.id]);
 const qaOf = (r, k) => (r.qa || {})[k] || [];
 const newQ = r => Object.values(r.qa || {}).flat().filter(q => q.who === 'c' && q.at > (r.seenAt || 0)).length;
@@ -236,7 +238,7 @@ function drawPrep() {
     <div class="card"><div class="muted">제목</div><input data-f="title" value="${esc(cur.title)}">
       <div class="muted" style="margin-top:8px">고객에게 한마디 (선택)</div><input data-f="intro" placeholder="예) 제가 직접 설치해 보고 고른 순서예요" value="${esc(cur.intro)}"></div>
     ${cur.items.map((it, i) => `<div class="card" data-item="${i}">
-      <div class="ihead"><span class="num" style="background:${ic(i)}">${i + 1}</span><input data-f="name" data-i="${i}" placeholder="고를 것 (예: 변기)" value="${esc(it.name)}" style="font-weight:800;font-size:1.1rem"></div>
+      <div class="ihead" style="--ic:${ic(i)}"><span class="num">${i + 1}</span><input data-f="name" data-i="${i}" placeholder="고를 것 (예: 변기)" value="${esc(it.name)}" style="font-weight:800;font-size:1.1rem"></div>
       <div class="drop" data-a="add" data-i="${i}"><b>📷 사진 넣기</b>여러 장 한 번에 · 끌어오기 · ⌘V · 사진 주소 붙여넣기<br><small>넣은 순서대로 1·2·3순위가 붙어요</small>
         <div style="margin-top:8px"><button class="sub sm" data-a="url" data-i="${i}">🔗 사진 주소로 넣기</button></div></div>
       <div class="grid2">${it.opts.map((o, j) => `<div class="eopt ${o.rank ? 'r' + o.rank : ''}" data-i="${i}" data-o="${j}">
@@ -383,7 +385,7 @@ function customer(preview) {
   const card = (it, i, { o, j }, big) => { const on = b.picks[it.id] === o.id; return `<div class="copt ${big ? 'big' : ''} ${on ? 'on' : ''} ${o.img ? '' : 'noimg'}" data-ci="${i}" data-cj="${j}">
     ${!o.img ? '' : o.inst && big ? `<div class="pair"><div class="img" style="background-image:url('${o.img}')"><span class="cap">제품</span></div><div class="img" style="background-image:url('${o.inst}')"><span class="cap">설치 모습</span></div></div>`
       : `<div class="img" style="background-image:url('${o.img}')">${o.inst ? `<span class="inset" style="background-image:url('${o.inst}')"></span>` : ''}</div>`}
-    ${o.rank ? `<span class="ribbon rk${o.rank}">${o.rank === 1 ? '👍 ' : ''}대표님 ${o.rank}순위</span>` : ''}<span class="check">${on ? '✓ 골랐어요' : '누르면 선택'}</span>
+    ${o.rank ? `<span class="ribbon rk${o.rank}">${o.rank === 1 ? '👍 ' : ''}${o.rank}순위</span>` : ''}<span class="check">${on ? '✓ 골랐어요' : '누르면 선택'}</span>
     <div class="body">${o.name ? `<div class="nm">${esc(o.name)}</div>` : ''}${o.price !== '' && o.price != null ? `<div class="pr">${won(o.price)}</div>` : ''}
       ${o.why ? `<div class="say"><span class="who">대표</span><span>${esc(o.why)}</span></div>` : ''}</div></div>`; };
   const thread = k => `<div class="qa">${qaOf(b, k).map(q => `<div class="bub ${q.who}"><small>${q.who === 'c' ? '나' : '최고집 대표님'} · ${ago(q.at)}</small>${esc(q.text)}</div>`).join('')}
@@ -394,7 +396,7 @@ function customer(preview) {
       <div style="margin-top:10px;font-size:.95rem">${esc(b.intro) || '대표님이 직접 고른 순서예요.'}<br><b>사진을 누르면 바로 저장</b>되고, 궁금한 건 아래에 남겨주세요.</div>
       <div class="prog"><i style="width:${n ? p / n * 100 : 0}%"></i></div><div style="font-size:.9rem">${p}/${n} 골랐어요</div></div>
     ${p === n && n ? '<div class="done-b">✓ 다 골라주셨어요! 대표님께 바로 전달됐어요.<br><small>바꾸고 싶으면 다른 사진을 누르세요.</small></div>' : ''}
-    ${b.items.some(it => it.opts.some(o => o.rank === 1)) && p < n ? '<button class="sub" style="width:100%;margin-bottom:12px" data-a="all1">👍 남은 건 대표님 1순위로 고르기</button>' : ''}
+    ${b.items.some(it => it.opts.some(o => o.rank === 1)) && p < n ? '<button class="sub" style="width:100%;margin-bottom:12px" data-a="all1">👍 남은 건 1순위로 고르기</button>' : ''}
     ${b.items.map((it, i) => { const [first, ...rest] = ranked(it); const dn = !!pickOf(it, b); return `<div class="card ic" style="--ic:${ic(i)}">
       <div class="ib ${dn ? 'done' : ''}"><span class="num">${dn ? '✓' : i + 1}</span><span class="t">${esc(it.name)}</span><span class="st">${dn ? '골랐어요' : '골라주세요'}</span></div>
       ${!first ? '<div class="muted">사진 준비 중이에요</div>' : first.o.rank === 1
