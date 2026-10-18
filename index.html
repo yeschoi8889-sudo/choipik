@@ -59,6 +59,8 @@ button.sm{min-height:2.2rem;padding:.3rem .7rem;font-size:.85rem;font-weight:600
 .seg button{min-height:2.4rem;padding:0;font-size:.85rem;background:var(--bg);color:var(--mute);border:1px solid var(--line);border-radius:9px}
 .seg button.on1{background:var(--r1);color:#fff;border-color:var(--r1)}.seg button.on2{background:var(--r2);color:#fff;border-color:var(--r2)}.seg button.on3{background:var(--r3);color:#fff;border-color:var(--r3)}
 .why{background:var(--amber-t);border-color:#f0d9a4}
+.ag{resize:none;overflow:hidden;line-height:1.35;display:block}
+.pw{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--mute)}
 .row2{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:6px}
 .del{position:absolute;top:-10px;right:-8px;width:28px;height:28px;min-height:0;padding:0;border-radius:50%;background:#fff;color:var(--mute);border:1px solid var(--line)}
 .irow{display:flex;gap:6px;justify-content:flex-end;margin-top:10px}
@@ -242,14 +244,16 @@ function drawPrep() {
         <div class="img" data-a="swap" style="background-image:url('${o.img}')" title="사진 바꾸기"></div>
         <div class="inst ${o.inst ? 'has' : ''}" data-a="inst" style="${o.inst ? `background-image:url('${o.inst}')` : ''}">${o.inst ? '<span>설치 사진 · 바꾸기</span>' : '＋ 설치 사진 (선택)<br><small>설치한 집 · LX 3D 캡처</small>'}</div>
         <div class="seg">${[1, 2, 3].map(r => `<button class="${o.rank === r ? 'on' + r : ''}" data-a="rank" data-r="${r}">${r}순위</button>`).join('')}</div>
-        <input class="why" data-f="why" placeholder="이유 한 줄" value="${esc(o.why)}">
-        <div class="row2"><input data-f="oname" placeholder="제품명" value="${esc(o.name)}"><input data-f="price" inputmode="decimal" placeholder="만원" value="${esc(o.price)}"></div>
+        <textarea class="why ag" rows="1" data-f="why" placeholder="이유 한 줄">${esc(o.why)}</textarea>
+        <textarea class="ag" rows="1" data-f="oname" placeholder="제품명">${esc(o.name)}</textarea>
+        <div class="pw"><input data-f="price" inputmode="decimal" placeholder="가격" value="${esc(o.price)}"><span>만원</span></div>
       </div>`).join('')}</div>
       <div class="irow"><button class="sub sm" data-a="up" data-i="${i}">↑</button><button class="sub sm" data-a="dn" data-i="${i}">↓</button><button class="sub sm" data-a="delitem" data-i="${i}">항목 삭제</button></div>
     </div>`).join('')}
     <button class="sub" style="width:100%" data-a="additem">＋ 고를 것 추가</button>
     <div style="text-align:center;margin-top:24px"><button class="sub sm" data-a="delboard">이 선택표 삭제</button></div>`;
   $('#layer').innerHTML = `<div class="bar"><div class="in"><button class="sub" data-a="preview">고객 화면 보기</button><button class="rose" data-a="send">고객에게 보내기</button></div></div>`;
+  growAll();
 }
 // ② 보낸 고객: 취합표(항목 × 고객) + 고객별 카드
 function drawRecips() {
@@ -360,7 +364,11 @@ document.addEventListener('paste', e => { if (view !== 'board' || tab !== 'prep'
 document.addEventListener('dragover', e => { e.preventDefault(); document.querySelectorAll('.drop.over').forEach(x => x.classList.remove('over')); e.target.closest?.('.drop')?.classList.add('over'); });
 document.addEventListener('drop', e => { e.preventDefault(); const d = e.target.closest?.('[data-item]'); if (!d || view !== 'board') return; document.querySelectorAll('.drop.over').forEach(x => x.classList.remove('over'));
   e.dataTransfer.files.length ? addPhotos(+d.dataset.item, e.dataTransfer.files) : addUrls(+d.dataset.item, urlsFrom(e.dataTransfer)); });
+const grow = el => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 2 + 'px'; };
+const growAll = () => document.querySelectorAll('textarea.ag').forEach(grow);
+window.addEventListener('resize', growAll);
 document.addEventListener('input', e => { // 글자 입력: 다시 그리지 않고 값만 저장
+  if (e.target.classList?.contains('ag')) { e.target.value = e.target.value.replace(/\n/g, ' '); grow(e.target); }
   if (view !== 'board' || tab !== 'prep') return; const el = e.target, f = el.dataset.f; if (!f) return;
   const c = el.closest('.eopt'), i = +(c?.dataset.i ?? el.dataset.i);
   if (f === 'title' || f === 'intro') cur[f] = el.value; else if (f === 'name') cur.items[i].name = el.value;
